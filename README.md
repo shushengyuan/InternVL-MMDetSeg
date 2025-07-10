@@ -78,8 +78,10 @@ It is _**the largest open-source vision/vision-language foundation model (14B)**
   For example, to install torch==1.12.0 with CUDA==11.3:
 
   ```bash
-  conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 -c pytorch
-  conda install -c conda-forge cudatoolkit-dev=11.3
+  pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
+  #conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 -c pytorch
+  conda install -c conda-forge cudatoolkit-dev=11.6
+  #conda install -c conda-forge cudatoolkit-dev=11.3
 
   # or
   pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 torchaudio==0.12.0 --extra-index-url https://download.pytorch.org/whl/cu113
