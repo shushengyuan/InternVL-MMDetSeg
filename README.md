@@ -96,7 +96,7 @@ It is _**the largest open-source vision/vision-language foundation model (14B)**
   cd flash-attention
   git checkout v0.2.8
   pip install ninja
-  conda install -c conda-forge gxx_linux-64=9.5.0
+  conda install -c conda-forge gxx_linux-64=9.5.0 #conda install -c conda-forge gxx_linux-64 -y
   python setup.py install # I use gcc-7.3 to compile this package
   ```
 
