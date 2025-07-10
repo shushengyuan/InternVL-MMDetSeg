@@ -78,7 +78,9 @@ It is _**the largest open-source vision/vision-language foundation model (14B)**
   For example, to install torch==1.12.0 with CUDA==11.3:
 
   ```bash
-  conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 cudatoolkit=11.3 -c pytorch
+  conda install pytorch==1.12.0 torchvision==0.13.0 torchaudio==0.12.0 -c pytorch
+  conda install -c conda-forge cudatoolkit-dev=11.3
+
   # or
   pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 torchaudio==0.12.0 --extra-index-url https://download.pytorch.org/whl/cu113
   ```
@@ -94,6 +96,7 @@ It is _**the largest open-source vision/vision-language foundation model (14B)**
   cd flash-attention
   git checkout v0.2.8
   pip install ninja
+  conda install -c conda-forge gxx_linux-64=9.5.0
   python setup.py install # I use gcc-7.3 to compile this package
   ```
 
