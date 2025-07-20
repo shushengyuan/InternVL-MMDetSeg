@@ -17,10 +17,10 @@ from .visualization import *
 # - op
 # - device
 
-warnings.warn(
-    'On January 1, 2023, MMCV will release v2.0.0, in which it will remove '
-    'components related to the training process and add a data transformation '
-    'module. In addition, it will rename the package names mmcv to mmcv-lite '
-    'and mmcv-full to mmcv. '
-    'See https://github.com/open-mmlab/mmcv/blob/master/docs/en/compatibility.md '
-    'for more details.')
+# warnings.warn(
+#     'On January 1, 2023, MMCV will release v2.0.0, in which it will remove '
+#     'components related to the training process and add a data transformation '
+#     'module. In addition, it will rename the package names mmcv to mmcv-lite '
+#     'and mmcv-full to mmcv. '
+#     'See https://github.com/open-mmlab/mmcv/blob/master/docs/en/compatibility.md '
+#     'for more details.')

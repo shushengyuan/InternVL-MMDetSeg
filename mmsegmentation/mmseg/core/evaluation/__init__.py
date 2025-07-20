@@ -5,7 +5,25 @@ from .metrics import (eval_metrics, intersect_and_union, mean_dice,
                       mean_fscore, mean_iou, pre_eval_to_metrics)
 from .panoptic_utils import INSTANCE_OFFSET  # noqa: F401,F403
 
+from .pixel_metrics import (
+    ROCMetric,
+    PD_FA,
+    mIoU,
+    PD_FA_1bin,
+    cal_tp_pos_fp_neg,
+    batch_pix_accuracy,
+    batch_intersection_union,
+    eval_pixel_metrics,
+)
 __all__ = [
+     'ROCMetric',
+    'PD_FA',
+    'mIoU',
+    'cal_tp_pos_fp_neg',
+    'batch_pix_accuracy',
+    'batch_intersection_union',
+    'eval_pixel_metrics',
+    # --------------------------------
     'EvalHook', 'DistEvalHook', 'mean_dice', 'mean_iou', 'mean_fscore',
     'eval_metrics', 'get_classes', 'get_palette', 'pre_eval_to_metrics',
     'intersect_and_union', 'DeepspeedDistEvalHook', 'INSTANCE_OFFSET'

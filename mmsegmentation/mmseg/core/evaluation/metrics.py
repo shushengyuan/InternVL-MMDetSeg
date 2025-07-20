@@ -57,12 +57,27 @@ def intersect_and_union(pred_label,
     else:
         pred_label = torch.from_numpy((pred_label))
 
+
     if isinstance(label, str):
         label = torch.from_numpy(
             mmcv.imread(label, flag='unchanged', backend='pillow'))
     else:
         label = torch.from_numpy(label)
 
+    # Fix dimension mismatch: ensure label is 2D
+    if label.dim() == 3:
+        # If label has multiple channels (e.g., RGBA), take the first channel
+        label = label[:, :, 0]
+    
+    # Ensure pred_label is also 2D
+    if pred_label.dim() == 3 and pred_label.shape[2] == 1:
+        pred_label = pred_label.squeeze(2)
+
+    # 特殊处理IRSTD数据集：将255转换为1作为目标类别
+    if (label == 255).any():
+        # print(f"Converting 255 to 1 for target class evaluation")
+        label = torch.where(label == 255, torch.tensor(1), label)
+    
     if label_map is not None:
         for old_id, new_id in label_map.items():
             label[label == old_id] = new_id
@@ -71,9 +86,11 @@ def intersect_and_union(pred_label,
         label = label - 1
         label[label == 254] = 255
 
-    mask = (label != ignore_index)
-    pred_label = pred_label[mask]
-    label = label[mask]
+    # 只在ignore_index不为None时应用mask
+    if ignore_index is not None:
+        mask = (label != ignore_index)
+        pred_label = pred_label[mask]
+        label = label[mask]
 
     intersect = pred_label[pred_label == label]
     area_intersect = torch.histc(

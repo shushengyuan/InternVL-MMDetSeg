@@ -22,6 +22,7 @@ from .unet import UNet
 from .vit import VisionTransformer
 from .vit_adapter import InternViTAdapter
 from .intern_vit_6b import InternViT6B
+from .dnanet.dnanet import DNANet
 
 __all__ = [
     'ResNet', 'ResNetV1c', 'ResNetV1d', 'ResNeXt', 'HRNet', 'FastSCNN',
@@ -29,5 +30,5 @@ __all__ = [
     'VisionTransformer', 'SwinTransformer', 'MixVisionTransformer',
     'BiSeNetV1', 'BiSeNetV2', 'ICNet', 'TIMMBackbone', 'ERFNet', 'PCPVT',
     'SVT', 'STDCNet', 'STDCContextPathNet', 'BEiT', 'MAE',
-    'InternViTAdapter', 'InternViT6B'
+    'InternViTAdapter', 'InternViT6B', 'DNANet'
 ]

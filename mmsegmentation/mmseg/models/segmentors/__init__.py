@@ -4,7 +4,7 @@ from .cascade_encoder_decoder import CascadeEncoderDecoder
 from .encoder_decoder import EncoderDecoder
 from .encoder_decoder_mask2former import EncoderDecoderMask2Former
 from .encoder_decoder_mask2former_aug import EncoderDecoderMask2FormerAug
-
+from .simple_encoder_decoder import SimpleEncoderDecoder
 
 __all__ = ['BaseSegmentor', 'EncoderDecoder', 'CascadeEncoderDecoder',
-           'EncoderDecoderMask2Former', 'EncoderDecoderMask2FormerAug']
+           'EncoderDecoderMask2Former', 'EncoderDecoderMask2FormerAug','SimpleEncoderDecoder']
