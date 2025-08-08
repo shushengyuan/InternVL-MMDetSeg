@@ -20,8 +20,9 @@ from .timm_backbone import TIMMBackbone
 from .twins import PCPVT, SVT
 from .unet import UNet
 from .vit import VisionTransformer
-from .vit_adapter import InternViTAdapter
+from .vit_adapter import InternViTAdapter,ViTAdapter
 from .intern_vit_6b import InternViT6B
+from .intern_vit import InternViT
 from .dnanet.dnanet import DNANet
 
 __all__ = [
@@ -30,5 +31,5 @@ __all__ = [
     'VisionTransformer', 'SwinTransformer', 'MixVisionTransformer',
     'BiSeNetV1', 'BiSeNetV2', 'ICNet', 'TIMMBackbone', 'ERFNet', 'PCPVT',
     'SVT', 'STDCNet', 'STDCContextPathNet', 'BEiT', 'MAE',
-    'InternViTAdapter', 'InternViT6B', 'DNANet'
+    'InternViTAdapter', 'InternViT6B', 'DNANet', 'InternViT', 'ViTAdapter'
 ]
