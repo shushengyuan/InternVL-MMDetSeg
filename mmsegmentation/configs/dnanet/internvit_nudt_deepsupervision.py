@@ -8,10 +8,10 @@ _base_ = [
     '../_base_/models/segmenter_vit-b16_mask.py',
     "../_base_/datasets/nudt_sirst.py",
     '../_base_/default_runtime.py',
-    "../_base_/schedules/sirst_schedule_40k.py",
+    "../_base_/schedules/sirst_schedule_40k_cosine.py",
 ]
-deepspeed = True
-deepspeed_config = 'zero_configs/adam_zero1_minimal.json'
+deepspeed = False
+deepspeed_config = 'zero_configs/adam_zero1_fp16.json'
 pretrained = './pretrained/InternVL3-1B/model.safetensors'
 model = dict(
     pretrained=None,
@@ -19,7 +19,7 @@ model = dict(
         _delete_=True,
         type='InternViTAdapter',
         pretrain_size=448,
-        img_size=512,  # InternViT标准输入尺寸
+        img_size=512,
         patch_size=16,
         embed_dim=1024,
         depth=24,
@@ -59,59 +59,59 @@ model = dict(
             loss_weight=1.0
         )),
     # Deep Supervision: 添加多个auxiliary heads
-    # auxiliary_head=[
-    #     dict(
-    #         type='FCNHead',
-    #         in_channels=1024,    # ResNet stage 1 output (1/4 scale)
-    #         in_index=0,
-    #         channels=256,
-    #         num_convs=1,
-    #         concat_input=False,
-    #         dropout_ratio=0.1,
-    #         num_classes=1,
-    #         norm_cfg=dict(type='SyncBN', requires_grad=True),
-    #         align_corners=False,
-    #         loss_decode=dict(
-    #             type='SoftIoULoss',
-    #             smooth=1.0,
-    #             loss_weight=1.0
-    #         )
-    #     ),
-    #     dict(
-    #         type='FCNHead',
-    #         in_channels=1024,    # ResNet stage 2 output (1/8 scale)
-    #         in_index=1,
-    #         channels=256,
-    #         num_convs=1,
-    #         concat_input=False,
-    #         dropout_ratio=0.1,
-    #         num_classes=1,
-    #         norm_cfg=dict(type='SyncBN', requires_grad=True),
-    #         align_corners=False,
-    #         loss_decode=dict(
-    #             type='SoftIoULoss',
-    #             smooth=1.0,
-    #             loss_weight=1.0
-    #         )
-    #     ),
-    #     dict(
-    #         type='FCNHead',
-    #         in_channels=1024,   # ResNet stage 3 output (1/16 scale)
-    #         in_index=2,
-    #         channels=256,
-    #         num_convs=1,
-    #         concat_input=False,
-    #         dropout_ratio=0.1,
-    #         num_classes=1,
-    #         norm_cfg=dict(type='SyncBN', requires_grad=True),
-    #         align_corners=False,
-    #         loss_decode=dict(
-    #             type='SoftIoULoss',
-    #             smooth=1.0,
-    #             loss_weight=1.0
-    #         )
-    #     )
-    # ],
+    auxiliary_head=[
+        dict(
+            type='FCNHead',
+            in_channels=1024,    # ResNet stage 1 output (1/4 scale)
+            in_index=0,
+            channels=256,
+            num_convs=1,
+            concat_input=False,
+            dropout_ratio=0.1,
+            num_classes=1,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            align_corners=False,
+            loss_decode=dict(
+                type='SoftIoULoss',
+                smooth=1.0,
+                loss_weight=1.0
+            )
+        ),
+        dict(
+            type='FCNHead',
+            in_channels=1024,    # ResNet stage 2 output (1/8 scale)
+            in_index=1,
+            channels=256,
+            num_convs=1,
+            concat_input=False,
+            dropout_ratio=0.1,
+            num_classes=1,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            align_corners=False,
+            loss_decode=dict(
+                type='SoftIoULoss',
+                smooth=1.0,
+                loss_weight=1.0
+            )
+        ),
+        dict(
+            type='FCNHead',
+            in_channels=1024,   # ResNet stage 3 output (1/16 scale)
+            in_index=2,
+            channels=256,
+            num_convs=1,
+            concat_input=False,
+            dropout_ratio=0.1,
+            num_classes=1,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            align_corners=False,
+            loss_decode=dict(
+                type='SoftIoULoss',
+                smooth=1.0,
+                loss_weight=1.0
+            )
+        )
+    ],
     test_cfg=dict(_delete_=True, mode="whole")
 )
 # optimizer = dict(_delete_=True, type='AdamW', lr=4e-5, betas=(0.9, 0.999), weight_decay=0.0,
@@ -135,27 +135,28 @@ model = dict(
 # CUDA memory management for stability
 # gpu_multithreading = False  # 禁用GPU多线程，避免内存竞争
 
-# 覆盖base配置中的checkpoint_config，添加DeepSpeed支持
-checkpoint_config = dict(
-    _delete_=True,  # 删除base配置中的checkpoint_config
-    deepspeed=deepspeed,  # DeepSpeed checkpoint支持
-    by_epoch=False, 
-    interval=2000, 
-    max_keep_ckpts=3,
-    create_symlink=False,
-    save_optimizer=False  # DeepSpeed下不保存optimizer状态
-)
+# if deepspeed:
+#     checkpoint_config = dict(deepspeed=deepspeed, by_epoch=False, interval=2000, max_keep_ckpts=2)
+# else:
+#     checkpoint_config = dict(by_epoch=False, interval=2000, max_keep_ckpts=2)
 evaluation = dict(
     # interval=100, 
     metric=['PdFa', 'ROC', 'mIoU'], 
     save_best='mIoU',  # 保存target类IoU最佳的模型（使用类别名称而不是索引）
     rule='greater',     # 明确指定IoU.target越大越好
 )
-# custom_hooks = [
-#     dict(
-#         type='ToBFloat16Hook',
-#         priority=49),
-# ]
-optimizer = dict(type="Adam", lr=0.00001, weight_decay=1e-5, betas=(0.9, 0.999))
+# 添加参数冻结状态打印hook
+custom_hooks = [
+    dict(
+        type='ParameterFreezeLogHook',
+        priority=50,
+        log_interval=1  # 仅在第一次迭代时打印
+    ),
+    # dict(
+    #     type='ToBFloat16Hook',
+    #     priority=49),
+]
+optimizer = dict(type="Adam", lr=0.0001, weight_decay=1e-5, betas=(0.9, 0.999))
 
-# find_unused_parameters已在base配置中定义，无需重复
+# 解决DDP未使用参数问题
+find_unused_parameters = True

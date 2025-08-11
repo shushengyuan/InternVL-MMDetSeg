@@ -292,14 +292,29 @@ class InternViTAdapter(InternViT):
         if self.add_vit_feature:
             if len(self.out_indices) == 4:
                 x3 = x.transpose(1, 2).view(bs, dim, H, W).contiguous()
-                x1 = F.interpolate(x3, scale_factor=4, mode='bilinear', align_corners=False)
-                x2 = F.interpolate(x3, scale_factor=2, mode='bilinear', align_corners=False)
-                x4 = F.interpolate(x3, scale_factor=0.5, mode='bilinear', align_corners=False)
+                # 处理BFloat16兼容性问题
+                orig_dtype = x3.dtype
+                if orig_dtype == torch.bfloat16:
+                    x3_cast = x3.float()
+                    x1 = F.interpolate(x3_cast, scale_factor=4, mode='bilinear', align_corners=False).to(orig_dtype)
+                    x2 = F.interpolate(x3_cast, scale_factor=2, mode='bilinear', align_corners=False).to(orig_dtype)
+                    x4 = F.interpolate(x3_cast, scale_factor=0.5, mode='bilinear', align_corners=False).to(orig_dtype)
+                else:
+                    x1 = F.interpolate(x3, scale_factor=4, mode='bilinear', align_corners=False)
+                    x2 = F.interpolate(x3, scale_factor=2, mode='bilinear', align_corners=False)
+                    x4 = F.interpolate(x3, scale_factor=0.5, mode='bilinear', align_corners=False)
                 c1, c2, c3, c4 = c1 + x1, c2 + x2, c3 + x3, c4 + x4
             else:
                 x3 = x.transpose(1, 2).view(bs, dim, H, W).contiguous()
-                x2 = F.interpolate(x3, scale_factor=2, mode='bilinear', align_corners=False)
-                x4 = F.interpolate(x3, scale_factor=0.5, mode='bilinear', align_corners=False)
+                # 处理BFloat16兼容性问题
+                orig_dtype = x3.dtype
+                if orig_dtype == torch.bfloat16:
+                    x3_cast = x3.float()
+                    x2 = F.interpolate(x3_cast, scale_factor=2, mode='bilinear', align_corners=False).to(orig_dtype)
+                    x4 = F.interpolate(x3_cast, scale_factor=0.5, mode='bilinear', align_corners=False).to(orig_dtype)
+                else:
+                    x2 = F.interpolate(x3, scale_factor=2, mode='bilinear', align_corners=False)
+                    x4 = F.interpolate(x3, scale_factor=0.5, mode='bilinear', align_corners=False)
                 c2, c3, c4 = c2 + x2, c3 + x3, c4 + x4
 
         # Final Norm

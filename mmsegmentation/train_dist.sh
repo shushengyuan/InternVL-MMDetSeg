@@ -18,6 +18,8 @@ export NCCL_DEBUG=WARN  # 减少日志输出，只显示警告
 export CUDA_LAUNCH_BLOCKING=0  # 允许异步CUDA操作
 export NCCL_TIMEOUT=1800  # 30分钟超时
 
+export DEEPSPEED_LOG_LEVEL=DEBUG #deepspeed log 级别
+
 # 2. 设置PyTorch分布式环境变量
 export MASTER_ADDR=localhost
 export MASTER_PORT=29501  # 避免端口冲突
@@ -26,9 +28,9 @@ export MASTER_PORT=29501  # 避免端口冲突
 export OMP_NUM_THREADS=8
 
 # 4. GPU配置 - 使用GPU 1,2 (避开被占用的GPU 0)
-# export CUDA_VISIBLE_DEVICES=1,2
-GPUS=2  # 使用2张GPU
-CONFIG="configs/dnanet/upernet.py"
+# export CUDA_VISIBLE_DEVICES=2,3
+GPUS=8  # 使用2张GPU
+CONFIG="configs/dnanet_v2_5/internvit_wide_v2_5_eval.py"
 
 echo "使用GPU: 1,2 (避开占用的GPU 0)"
 echo "GPU数量: $GPUS"
@@ -47,7 +49,7 @@ lsof -i :29501 || echo "端口29501空闲"
 echo "=== 启动2GPU分布式训练 ==="
 python -m torch.distributed.launch \
     --nproc_per_node=$GPUS \
-    --master_port=29501 \
+    --master_port=$MASTER_PORT \
     tools/train.py $CONFIG \
     --launcher pytorch \
     --seed 42

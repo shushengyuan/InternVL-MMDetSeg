@@ -1,0 +1,44 @@
+{
+    "train_batch_size": 16,
+    "gradient_accumulation_steps": 1,
+    "optimizer": {
+        "type": "AdamW",
+        "params": {
+            "lr": 0.00004
+        }
+    },
+    "fp16": {
+        "enabled": true,
+        "auto_cast": true,
+        "loss_scale": 0,
+        "initial_scale_power": 16,
+        "loss_scale_window": 1000,
+        "hysteresis": 2,
+        "min_loss_scale": 1
+    },
+    "zero_optimization": {
+        "stage": 2,
+        "allgather_partitions": true,
+        "allgather_bucket_size": 5e8,
+        "overlap_comm": true,
+        "reduce_scatter": true,
+        "reduce_bucket_size": 5e8,
+        "contiguous_gradients": true,
+        "cpu_offload": false
+    },
+    "activation_checkpointing": {
+        "partition_activations": true,
+        "cpu_checkpointing": false,
+        "contiguous_memory_optimization": true,
+        "number_checkpoints": 4,
+        "synchronize_checkpoint_boundary": true,
+        "profile": false
+    },
+    "memory_optimization": {
+        "empty_cache_after_step": true,
+        "reduce_memory_fragmentation": true
+    },
+    "log": {
+        "steps_per_print": 50
+    }
+}

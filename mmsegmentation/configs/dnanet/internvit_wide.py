@@ -6,12 +6,13 @@
 
 _base_ = [
     '../_base_/models/segmenter_vit-b16_mask.py',
-    "../_base_/datasets/nudt_sirst.py",
+    "../_base_/datasets/wide_irstd.py",
     '../_base_/default_runtime.py',
     "../_base_/schedules/sirst_schedule_40k.py",
 ]
-deepspeed = True
-deepspeed_config = 'zero_configs/adam_zero1_minimal.json'
+
+deepspeed = True  
+deepspeed_config = 'zero_configs/adam_zero1_minimal.json'  # 最小化配置，让mmcv管理优化器
 pretrained = './pretrained/InternVL3-1B/model.safetensors'
 model = dict(
     pretrained=None,
@@ -19,7 +20,7 @@ model = dict(
         _delete_=True,
         type='InternViTAdapter',
         pretrain_size=448,
-        img_size=512,  # InternViT标准输入尺寸
+        img_size=256,
         patch_size=16,
         embed_dim=1024,
         depth=24,
@@ -135,19 +136,13 @@ model = dict(
 # CUDA memory management for stability
 # gpu_multithreading = False  # 禁用GPU多线程，避免内存竞争
 
-# 覆盖base配置中的checkpoint_config，添加DeepSpeed支持
-checkpoint_config = dict(
-    _delete_=True,  # 删除base配置中的checkpoint_config
-    deepspeed=deepspeed,  # DeepSpeed checkpoint支持
-    by_epoch=False, 
-    interval=2000, 
-    max_keep_ckpts=3,
-    create_symlink=False,
-    save_optimizer=False  # DeepSpeed下不保存optimizer状态
-)
+if deepspeed:
+    checkpoint_config = dict(deepspeed=deepspeed, by_epoch=False, interval=2000, max_keep_ckpts=2)
+else:
+    checkpoint_config = dict(by_epoch=False, interval=2000, max_keep_ckpts=2)
 evaluation = dict(
-    # interval=100, 
-    metric=['PdFa', 'ROC', 'mIoU'], 
+    # interval=50, 
+    metric=['mIoU'], 
     save_best='mIoU',  # 保存target类IoU最佳的模型（使用类别名称而不是索引）
     rule='greater',     # 明确指定IoU.target越大越好
 )
@@ -156,6 +151,7 @@ evaluation = dict(
 #         type='ToBFloat16Hook',
 #         priority=49),
 # ]
-optimizer = dict(type="Adam", lr=0.00001, weight_decay=1e-5, betas=(0.9, 0.999))
+optimizer = dict(type="Adam", lr=0.00005, weight_decay=1e-5, betas=(0.9, 0.999))
 
-# find_unused_parameters已在base配置中定义，无需重复
+# 解决DDP未使用参数问题
+find_unused_parameters = True

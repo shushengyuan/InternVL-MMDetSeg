@@ -12,14 +12,14 @@ _base_ = [
 ]
 deepspeed = True
 deepspeed_config = 'zero_configs/adam_zero1_minimal.json'
-pretrained = './pretrained/InternVL3-1B/model.safetensors'
+pretrained = './pretrained/InternVL2_5-1B/model.safetensors'
 model = dict(
     pretrained=None,
     backbone=dict(
         _delete_=True,
         type='InternViTAdapter',
         pretrain_size=448,
-        img_size=512,  # InternViT标准输入尺寸
+        img_size=512,
         patch_size=16,
         embed_dim=1024,
         depth=24,
@@ -33,7 +33,7 @@ model = dict(
         layerscale_force_fp32=False,
         output_dtype="float32",
         last_feat=False,
-        freeze_vit=False,  # 解冻backbone进行微调
+        freeze_vit=True,  # 解冻backbone进行微调
         only_feat_out=True,
         interaction_indexes=[[0, 7], [8, 11], [12, 15], [16, 23]],
         cffn_ratio=0.25,
@@ -135,19 +135,13 @@ model = dict(
 # CUDA memory management for stability
 # gpu_multithreading = False  # 禁用GPU多线程，避免内存竞争
 
-# 覆盖base配置中的checkpoint_config，添加DeepSpeed支持
-checkpoint_config = dict(
-    _delete_=True,  # 删除base配置中的checkpoint_config
-    deepspeed=deepspeed,  # DeepSpeed checkpoint支持
-    by_epoch=False, 
-    interval=2000, 
-    max_keep_ckpts=3,
-    create_symlink=False,
-    save_optimizer=False  # DeepSpeed下不保存optimizer状态
-)
+if deepspeed:
+    checkpoint_config = dict(deepspeed=deepspeed, by_epoch=False, interval=2000, max_keep_ckpts=2)
+else:
+    checkpoint_config = dict(by_epoch=False, interval=2000, max_keep_ckpts=2)
 evaluation = dict(
     # interval=100, 
-    metric=['PdFa', 'ROC', 'mIoU'], 
+    # metric=['mIoU'], 
     save_best='mIoU',  # 保存target类IoU最佳的模型（使用类别名称而不是索引）
     rule='greater',     # 明确指定IoU.target越大越好
 )
@@ -156,6 +150,7 @@ evaluation = dict(
 #         type='ToBFloat16Hook',
 #         priority=49),
 # ]
-optimizer = dict(type="Adam", lr=0.00001, weight_decay=1e-5, betas=(0.9, 0.999))
+optimizer = dict(type="Adam", lr=0.00005, weight_decay=1e-5, betas=(0.9, 0.999))
 
-# find_unused_parameters已在base配置中定义，无需重复
+# 解决DDP未使用参数问题
+find_unused_parameters = True

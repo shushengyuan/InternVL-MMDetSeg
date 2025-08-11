@@ -506,7 +506,7 @@ class NUDTSIRSTDataset(Dataset):
         # )  # 构建表格数据
 
         # 构建 AsciiTable 表格并打印
-        self.show_eval_results(eval_results, logger)
+        # self.show_eval_results(eval_results, logger)
 
         return eval_results
 

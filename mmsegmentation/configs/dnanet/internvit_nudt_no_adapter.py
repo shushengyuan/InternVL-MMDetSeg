@@ -6,7 +6,7 @@
 
 _base_ = [
     '../_base_/models/segmenter_vit-b16_mask.py',
-    "../_base_/datasets/nudt_sirst.py",
+    "../_base_/datasets/nudt_sirst.py",  # 使用512配置匹配InternViT
     '../_base_/default_runtime.py',
     "../_base_/schedules/sirst_schedule_40k.py",
 ]
@@ -17,7 +17,7 @@ model = dict(
     pretrained=None,
     backbone=dict(
         _delete_=True,
-        type='InternViTAdapter',
+        type='InternViT',
         pretrain_size=448,
         img_size=512,  # InternViT标准输入尺寸
         patch_size=16,
@@ -34,10 +34,6 @@ model = dict(
         output_dtype="float32",
         last_feat=False,
         freeze_vit=False,  # 解冻backbone进行微调
-        only_feat_out=True,
-        interaction_indexes=[[0, 7], [8, 11], [12, 15], [16, 23]],
-        cffn_ratio=0.25,
-        deform_ratio=0.25,
         qkv_bias=True,
         norm_type='layer_norm',
         with_simple_fpn=False,

@@ -238,7 +238,12 @@ class DeepspeedDistEvalHook(DistEvalHook):
             tmpdir = osp.join(runner.work_dir, '.eval_hook')
         
         from mmseg.apis import multi_gpu_test
+        import torch
         
+        # DEBUG: 在评估前清理GPU内存
+        if torch.cuda.is_available():
+            # 清理缓存
+            torch.cuda.empty_cache()
         # Changed results to self.results so that MMDetWandbHook can access
         # the evaluation results and log them to wandb.
         results = multi_gpu_test(

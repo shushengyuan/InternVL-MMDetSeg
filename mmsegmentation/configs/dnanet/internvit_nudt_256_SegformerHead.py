@@ -6,11 +6,11 @@
 
 _base_ = [
     '../_base_/models/segmenter_vit-b16_mask.py',
-    "../_base_/datasets/nudt_sirst.py",
+    "../_base_/datasets/nudt_sirst.py",  
     '../_base_/default_runtime.py',
     "../_base_/schedules/sirst_schedule_40k.py",
 ]
-deepspeed = True
+deepspeed = False
 deepspeed_config = 'zero_configs/adam_zero1_minimal.json'
 pretrained = './pretrained/InternVL3-1B/model.safetensors'
 model = dict(
@@ -19,7 +19,7 @@ model = dict(
         _delete_=True,
         type='InternViTAdapter',
         pretrain_size=448,
-        img_size=512,  # InternViT标准输入尺寸
+        img_size=256,  # 匹配实际输入尺寸
         patch_size=16,
         embed_dim=1024,
         depth=24,
@@ -43,11 +43,10 @@ model = dict(
         with_simple_fpn=False,
         pretrained=pretrained,pretrained_type="safe"),
     decode_head=dict(
-        _delete_=True,
-        type='UPerHead',  # 或者 PSPHead, FPN等适合多尺度特征的head
+        _delete_=True, # Do not delete this line
+        type='SegformerHead',
         in_channels=[1024, 1024, 1024, 1024],
         in_index=[0, 1, 2, 3],
-        pool_scales=(1, 2, 3, 6),
         channels=512,
         dropout_ratio=0.1,
         num_classes=1,
@@ -135,16 +134,11 @@ model = dict(
 # CUDA memory management for stability
 # gpu_multithreading = False  # 禁用GPU多线程，避免内存竞争
 
-# 覆盖base配置中的checkpoint_config，添加DeepSpeed支持
-checkpoint_config = dict(
-    _delete_=True,  # 删除base配置中的checkpoint_config
-    deepspeed=deepspeed,  # DeepSpeed checkpoint支持
-    by_epoch=False, 
-    interval=2000, 
-    max_keep_ckpts=3,
-    create_symlink=False,
-    save_optimizer=False  # DeepSpeed下不保存optimizer状态
-)
+if deepspeed:
+    checkpoint_config = dict(deepspeed=deepspeed, by_epoch=False, interval=2000, max_keep_ckpts=2)
+else:
+    checkpoint_config = dict(by_epoch=False, interval=2000, max_keep_ckpts=2)
+    
 evaluation = dict(
     # interval=100, 
     metric=['PdFa', 'ROC', 'mIoU'], 
@@ -158,4 +152,5 @@ evaluation = dict(
 # ]
 optimizer = dict(type="Adam", lr=0.00001, weight_decay=1e-5, betas=(0.9, 0.999))
 
-# find_unused_parameters已在base配置中定义，无需重复
+# 解决DDP未使用参数问题
+find_unused_parameters = True

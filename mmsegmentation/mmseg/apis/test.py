@@ -204,6 +204,17 @@ def multi_gpu_test(model,
         prog_bar = mmcv.ProgressBar(len(dataset))
 
     for batch_indices, data in zip(loader_indices, data_loader):
+        # DEBUG: 打印batch size信息
+        if 'img' in data:
+            img_tensor = data['img']
+            if isinstance(img_tensor, list):
+                batch_size = len(img_tensor)
+                img_shape = img_tensor[0].shape if len(img_tensor) > 0 else 'Empty'
+            else:
+                batch_size = img_tensor.shape[0] if hasattr(img_tensor, 'shape') else 'Unknown'
+                img_shape = img_tensor.shape if hasattr(img_tensor, 'shape') else 'Unknown'
+            # print(f"🔍 [DEBUG] Validation batch_size: {batch_size}, img_shape: {img_shape}, batch_indices: {batch_indices}")
+        
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
 

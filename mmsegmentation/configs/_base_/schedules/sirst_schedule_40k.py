@@ -1,5 +1,6 @@
 # optimizer = dict(type="AdamW", lr=0.0001, weight_decay=1e-5)
-optimizer = dict(type="Adam", lr=0.0005, weight_decay=1e-5, betas=(0.9, 0.999))
+# optimizer = dict(type="Adam", lr=0.0005, weight_decay=1e-5, betas=(0.9, 0.999))
+# optimizer = dict(type="Adam", lr=0.0001, weight_decay=1e-5, betas=(0.9, 0.999))
 
 optimizer_config = dict()
 # learning policy
@@ -11,7 +12,7 @@ lr_config = dict(policy="poly", power=0.9, min_lr=0, by_epoch=False)  # 0.7
 
 interval = 2000
 # interval = 100
-runner = dict(type="IterBasedRunner", max_iters=40000)
+runner = dict(type="IterBasedRunner", max_iters=20000) #40000
 # todo 仅保留了后五个 checkpoint, 而不是最优的！
 checkpoint_config = dict(
     by_epoch=False,

@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from .layer_decay_optimizer_constructor import CustomLayerDecayOptimizerConstructor
+from .freeze_log_hook import ParameterFreezeLogHook
+from .empty_cache_hook import CustomEmptyCacheHook
+from .gpu_memory_hook import GPUMemoryCleanupHook
+from .aggressive_memory_hook import AggressiveMemoryHook
 import torch
 
-__all__ = ['CustomLayerDecayOptimizerConstructor',]
+__all__ = ['CustomLayerDecayOptimizerConstructor', 'ParameterFreezeLogHook', 'CustomEmptyCacheHook', 'GPUMemoryCleanupHook', 'AggressiveMemoryHook']
 
 
 torch_version = float(torch.__version__[:4])
