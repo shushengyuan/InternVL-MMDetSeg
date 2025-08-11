@@ -103,6 +103,8 @@ class EncoderDecoder(BaseSegmentor):
         """Run forward function and calculate loss for decode head in
         inference."""
         seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg)
+        # if isinstance(seg_logits, (list, tuple)):
+        #     seg_logits = seg_logits[-1]  # 丢失多尺度信息
         return seg_logits
 
     def _auxiliary_head_forward_train(self, x, img_metas, gt_semantic_seg):
@@ -254,7 +256,12 @@ class EncoderDecoder(BaseSegmentor):
             seg_logit = self.slide_inference(img, img_meta, rescale)
         else:
             seg_logit = self.whole_inference(img, img_meta, rescale)
-        output = F.softmax(seg_logit, dim=1)
+        # output = F.softmax(seg_logit, dim=1)
+        if self.num_classes > 1:
+            output = F.softmax(seg_logit, dim=1)
+        else:
+            # 修复：与SimpleEncoderDecoder保持一致，直接输出logits
+            output = seg_logit
         flip = img_meta[0]['flip']
         if flip:
             flip_direction = img_meta[0]['flip_direction']
@@ -269,7 +276,12 @@ class EncoderDecoder(BaseSegmentor):
     def simple_test(self, img, img_meta, rescale=True):
         """Simple test with single image."""
         seg_logit = self.inference(img, img_meta, rescale)
-        seg_pred = seg_logit.argmax(dim=1)
+        if self.num_classes > 1:
+            seg_pred = seg_logit.argmax(dim=1)
+        else:
+            # 修复：单类别情况下，直接使用概率值，不进行argmax
+            seg_pred = seg_logit
+
         if torch.onnx.is_in_onnx_export():
             # our inference backend only support 4D output
             seg_pred = seg_pred.unsqueeze(0)
@@ -292,7 +304,11 @@ class EncoderDecoder(BaseSegmentor):
             cur_seg_logit = self.inference(imgs[i], img_metas[i], rescale)
             seg_logit += cur_seg_logit
         seg_logit /= len(imgs)
-        seg_pred = seg_logit.argmax(dim=1)
+        if self.num_classes > 1:
+            seg_pred = seg_logit.argmax(dim=1)
+        else:
+            # 修复：单类别情况下，直接使用概率值
+            seg_pred = seg_logit
         seg_pred = seg_pred.cpu().numpy()
         # unravel batch dim
         seg_pred = list(seg_pred)

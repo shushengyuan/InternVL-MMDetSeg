@@ -125,7 +125,21 @@ class MSDeformAttn(nn.Module):
                 .format(reference_points.shape[-1]))
         sampling_locations = sampling_locations.to(value.dtype)
         attention_weights = attention_weights.to(value.dtype)
-        output = MSDeformAttnFunction.apply(value, input_spatial_shapes, input_level_start_index,
-                                            sampling_locations, attention_weights, self.im2col_step)
+
+        # 为BF16和FP16启用本机实现
+        orig_dtype = value.dtype
+        if orig_dtype == torch.bfloat16:
+            value_cast = value.to(torch.float16)
+            sampling_locations_cast = sampling_locations.to(torch.float16)
+            attention_weights_cast = attention_weights.to(torch.float16)
+            output = MSDeformAttnFunction.apply(
+                value_cast, input_spatial_shapes, input_level_start_index,
+                sampling_locations_cast, attention_weights_cast, self.im2col_step
+            ).to(orig_dtype)
+        else:
+            output = MSDeformAttnFunction.apply(
+                value, input_spatial_shapes, input_level_start_index,
+                sampling_locations, attention_weights, self.im2col_step
+            )
         output = self.output_proj(output)
         return output
