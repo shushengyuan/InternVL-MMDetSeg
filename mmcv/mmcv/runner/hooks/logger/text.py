@@ -131,10 +131,10 @@ class TextLoggerHook(LoggerHook):
             if isinstance(log_dict['lr'], dict):
                 lr_str = []
                 for k, val in log_dict['lr'].items():
-                    lr_str.append(f'lr_{k}: {val:.3e}')
+                    lr_str.append(f'lr_{k}: {val:.6e}')
                 lr_str = ' '.join(lr_str)  # type: ignore
             else:
-                lr_str = f'lr: {log_dict["lr"]:.3e}'  # type: ignore
+                lr_str = f'lr: {log_dict["lr"]:.6e}'  # type: ignore
 
             # by epoch: Epoch [4][100/1000]
             # by iter:  Iter [100/100000]
@@ -199,7 +199,7 @@ class TextLoggerHook(LoggerHook):
         if isinstance(items, list):
             return [self._round_float(item) for item in items]
         elif isinstance(items, float):
-            return round(items, 5)
+            return round(items, 6)
         else:
             return items
 
@@ -218,12 +218,15 @@ class TextLoggerHook(LoggerHook):
         # only record lr of the first param group
         cur_lr = runner.current_lr()
         if isinstance(cur_lr, list):
-            log_dict['lr'] = cur_lr[0]
+            original_lr = cur_lr[0]  # 保存原始lr值
+            log_dict['lr'] = original_lr
         else:
             assert isinstance(cur_lr, dict)
             log_dict['lr'] = {}
+            original_lr = {}
             for k, lr_ in cur_lr.items():
                 assert isinstance(lr_, list)
+                original_lr[k] = lr_[0]
                 log_dict['lr'].update({k: lr_[0]})
 
         if 'time' in runner.log_buffer.output:
@@ -233,6 +236,11 @@ class TextLoggerHook(LoggerHook):
 
         log_dict = dict(log_dict, **runner.log_buffer.output)  # type: ignore
 
+         # 确保lr值不被log_buffer覆盖，保持原始精度
+        if isinstance(cur_lr, list):
+            log_dict['lr'] = original_lr
+        else:
+            log_dict['lr'] = original_lr
         self._log_info(log_dict, runner)
         self._dump_log(log_dict, runner)
         return log_dict

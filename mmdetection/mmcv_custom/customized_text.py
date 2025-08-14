@@ -39,10 +39,10 @@ class CustomizedTextLoggerHook(TextLoggerHook):
                 if isinstance(log_dict[lr_type], dict):
                     lr_str[lr_type] = []
                     for k, val in log_dict[lr_type].items():
-                        lr_str.append(f'{lr_type}_{k}: {val:.3e}')
+                        lr_str.append(f'{lr_type}_{k}: {val:.5e}')
                     lr_str[lr_type] = ' '.join(lr_str)
                 else:
-                    lr_str[lr_type] = f'{lr_type}: {log_dict[lr_type]:.3e}'
+                    lr_str[lr_type] = f'{lr_type}: {log_dict[lr_type]:.5e}'
 
             # by epoch: Epoch [4][100/1000]
             # by iter:  Iter [100/100000]

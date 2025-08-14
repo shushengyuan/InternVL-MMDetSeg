@@ -221,7 +221,6 @@ class DeepspeedDistEvalHook(DistEvalHook):
         # which may cause the inconsistent performance of models in
         # different ranks, so we broadcast BatchNorm's buffers
         # of rank 0 to other ranks to avoid this.
-        torch.cuda.empty_cache()
         if self.broadcast_bn_buffer:
             model = runner.model
             for name, module in model.named_modules():
